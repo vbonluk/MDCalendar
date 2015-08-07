@@ -24,6 +24,16 @@
 //  SOFTWARE.
 #import <UIKit/UIKit.h>
 
+@protocol MDCalendarViewControllerDelegate;
+
 @interface MDCalendarViewController : UIViewController
+
+@property (nonatomic, weak) id<MDCalendarViewControllerDelegate> delegate;
+
+@end
+
+@protocol MDCalendarViewControllerDelegate <NSObject>
+
+- (void)MDCalendarViewControllerBackToPraviousVC:(MDCalendarViewController *)controller;
 
 @end

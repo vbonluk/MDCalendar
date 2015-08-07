@@ -41,6 +41,7 @@
 @property (nonatomic, strong) UIView  *highlightView;
 @property (nonatomic, strong) UIView  *borderView;
 @property (nonatomic, strong) UIView  *indicatorView;
+
 @end
 
 static NSString * const kMDCalendarViewCellIdentifier = @"kMDCalendarViewCellIdentifier";
@@ -670,7 +671,41 @@ static CGFloat const kMDCalendarViewSectionSpacing = 10.f;
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     NSDate *date = [self dateForIndexPath:indexPath];
-    self.selectedDate = date;
+//    self.selectedDate = date;
+    
+    self.selectedCount ++;
+    switch (self.selectedCount) {
+        case 1:
+        {
+            self.selectedDate = [self dateForIndexPath:indexPath];
+            self.selectedDateSecond = self.selectedDate;
+            MDCalendarViewCell *test = (MDCalendarViewCell *)[self.collectionView cellForItemAtIndexPath:[self indexPathForDate:self.selectedDate]];
+            test.selected = YES;
+        }
+            break;
+        case 2:
+        {
+            self.selectedDateSecond = self.selectedDate;
+            self.selectedDate = [self dateForIndexPath:indexPath];
+            [self makeSelectedDateChangeColorsWithSeledtedDate:self.selectedDate SelectedDatePravious:self.selectedDateSecond isSelected:YES];
+        }
+            break;
+        case 3:
+        {
+            self.selectedDateThird = self.selectedDateSecond;
+            self.selectedDateSecond = self.selectedDate;
+            self.selectedDate = [self dateForIndexPath:indexPath];
+            [self makeSelectedDateChangeColorsWithSeledtedDate:self.selectedDateSecond SelectedDatePravious:self.selectedDateThird isSelected:NO];
+            MDCalendarViewCell *test = (MDCalendarViewCell *)[self.collectionView cellForItemAtIndexPath:[self indexPathForDate:self.selectedDate]];
+            test.selected = YES;
+            self.selectedCount = 1;
+        }
+            break;
+        default:
+            self.selectedCount = 1;
+            break;
+    }
+
     
     if ([_delegate respondsToSelector:@selector(calendarView:didSelectDate:)]) {
         [_delegate calendarView:self didSelectDate:date];
@@ -719,6 +754,28 @@ static CGFloat const kMDCalendarViewSectionSpacing = 10.f;
 - (CGFloat)cellWidth {
     CGFloat boundsWidth = _collectionView.bounds.size.width;
     return floor(boundsWidth / DAYS_IN_WEEK) - kMDCalendarViewItemSpacing;
+}
+
+#pragma mark - selected Date method
+- (void)makeSelectedDateChangeColorsWithSeledtedDate:(NSDate *)selectedDate SelectedDatePravious:(NSDate *)selectedDateSecond isSelected:(BOOL)isSelected{
+    NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+    unsigned int unitFlag = NSDayCalendarUnit;
+    NSDateComponents *components = [calendar components:unitFlag fromDate:selectedDate toDate:selectedDateSecond options:0];
+    NSInteger days = [components day];
+    //    NSLog(@"day:%ld",days);
+    
+    long int count = labs(days);
+    for (int i = 0 ; i < count; i ++) {
+        int interval;
+        if (days < 0) {
+            interval = i*86400;
+        }else{
+            interval = -i*86400;
+        }
+        MDCalendarViewCell *test = (MDCalendarViewCell *)[self.collectionView cellForItemAtIndexPath:[self indexPathForDate:[selectedDateSecond dateByAddingTimeInterval:interval]]];
+        test.selected = isSelected;
+        
+    }
 }
 
 @end

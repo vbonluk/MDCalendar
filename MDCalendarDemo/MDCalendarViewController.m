@@ -59,8 +59,10 @@
         calendarView.highlightColor = [UIColor pacifica];
         calendarView.indicatorColor = [UIColor colorWithWhite:0.85 alpha:1.0];
         
-        NSDate *startDate = [NSDate date];
-        NSDate *endDate = [startDate dateByAddingMonths:12*25];
+        int timeInterval = -31536000;//一年的秒数
+        
+        NSDate *endDate = [NSDate date];
+        NSDate *startDate = [NSDate dateWithTimeInterval:timeInterval sinceDate:endDate];
         
         calendarView.startDate = startDate;
         calendarView.endDate = endDate;
@@ -69,8 +71,29 @@
         
         [self.view addSubview:calendarView];
         self.calendarView = calendarView;
+        
+        UIBarButtonItem *rightItem = [[UIBarButtonItem alloc] initWithTitle:@"确定" style:UIBarButtonItemStylePlain target:self action:@selector(BackToReporiList)];
+        
+        self.navigationItem.rightBarButtonItem = rightItem;
     }
     return self;
+}
+
+-(void)BackToReporiList{
+    if (self.calendarView.selectedDate == nil || self.calendarView.selectedDateSecond == nil) {
+        self.calendarView.selectedDate = [NSDate dateWithTimeIntervalSinceNow:0];
+        self.calendarView.selectedDateSecond = self.calendarView.selectedDate;
+    }
+    if (self.delegate && [self.delegate respondsToSelector:@selector(MDCalendarViewControllerBackToPraviousVC:)]) {
+        [self.delegate MDCalendarViewControllerBackToPraviousVC:self];
+    }
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    [_calendarView scrollCalendarToDate:_calendarView.endDate animated:YES];
+    
 }
 
 - (void)viewWillLayoutSubviews {

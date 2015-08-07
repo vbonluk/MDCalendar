@@ -139,8 +139,13 @@
  * Allows you to manually specify a date to be selected when the calendar is set-up.
  * Defaults to @see startDate
  */
-@property (nonatomic, strong) NSDate  *selectedDate;  /**< default is startDate */
+@property (nonatomic, strong) NSDate    *selectedDate;  /**< default is startDate */
 
+@property (nonatomic, strong) NSDate    *selectedDateSecond;
+
+@property (nonatomic, strong) NSDate    *selectedDateThird;
+
+@property (nonatomic, assign) int selectedCount;
 
 ///--------------------------------
 /// @name Appearance : Fonts
