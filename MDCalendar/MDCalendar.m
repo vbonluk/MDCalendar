@@ -42,6 +42,8 @@
 @property (nonatomic, strong) UIView  *borderView;
 @property (nonatomic, strong) UIView  *indicatorView;
 
+@property (nonatomic, assign) BOOL      isSelected;
+
 @end
 
 static NSString * const kMDCalendarViewCellIdentifier = @"kMDCalendarViewCellIdentifier";
@@ -113,17 +115,30 @@ static NSString * const kMDCalendarViewCellIdentifier = @"kMDCalendarViewCellIde
     _label.textColor = selected ? self.backgroundColor : _textColor;
     
     if (!self.selected && selected) {
-        highlightView.transform = CGAffineTransformMakeScale(.1f, .1f);
-        [UIView animateWithDuration:0.4
-                              delay:0.0
-             usingSpringWithDamping:0.5
-              initialSpringVelocity:1.0
-                            options:UIViewAnimationOptionCurveEaseInOut
-                         animations:^{
-                             highlightView.transform = CGAffineTransformIdentity;
-                         } completion:^(BOOL finished) {
-                             nil;
-                         }];
+        if (iOS7) {
+            highlightView.transform = CGAffineTransformMakeScale(.1f, .1f);
+            [UIView animateWithDuration:0.4
+                                  delay:0.0
+                 usingSpringWithDamping:0.5
+                  initialSpringVelocity:1.0
+                                options:UIViewAnimationOptionCurveEaseInOut
+                             animations:^{
+                                 highlightView.transform = CGAffineTransformIdentity;
+                             } completion:^(BOOL finished) {
+                                 nil;
+                             }];
+        }else{
+            [UIView animateWithDuration:0.4
+                                  delay:0.0
+                                options:UIViewAnimationOptionCurveEaseInOut
+                             animations:^{
+                                 //                    highlightView.transform = CGAffineTransformIdentity;
+                                 highlightView.backgroundColor = [UIColor redColor];
+                                 _label.textColor  = [UIColor blackColor];
+                                 _label.backgroundColor = [UIColor colorWithRed:80/255.0 green:180/255.0 blue:80/255.0 alpha:1.0];
+                                 _label.layer.cornerRadius = CGRectGetHeight(_label.bounds) / 2;
+                             }completion:^(BOOL finished) {}];
+        }
     }
     [super setSelected:selected];
 }
@@ -437,7 +452,11 @@ static CGFloat const kMDCalendarViewSectionSpacing = 10.f;
         self.weekdayFont    = [UIFont systemFontOfSize:12];
         
         self.cellBackgroundColor    = nil;
-        self.highlightColor         = self.tintColor;
+        if (iOS7) {
+            self.highlightColor         = self.tintColor;
+        }else{
+            self.highlightColor         = [UIColor greenColor];//适配iOS6
+        }
         self.indicatorColor         = [UIColor lightGrayColor];
         
         self.headerBackgroundColor  = nil;
@@ -638,6 +657,11 @@ static CGFloat const kMDCalendarViewSectionSpacing = 10.f;
     
     cell.indicatorColor = showIndicator ? _indicatorColor : [UIColor clearColor];
     
+    if ([date isAfterDate:self.endDate]) {
+        cell.textColor = [UIColor lightGrayColor];
+        cell.userInteractionEnabled = NO;
+    }
+    
     return cell;
 }
 
@@ -681,6 +705,7 @@ static CGFloat const kMDCalendarViewSectionSpacing = 10.f;
             self.selectedDateSecond = self.selectedDate;
             MDCalendarViewCell *test = (MDCalendarViewCell *)[self.collectionView cellForItemAtIndexPath:[self indexPathForDate:self.selectedDate]];
             test.selected = YES;
+            test.isSelected = YES;
         }
             break;
         case 2:
@@ -688,6 +713,13 @@ static CGFloat const kMDCalendarViewSectionSpacing = 10.f;
             self.selectedDateSecond = self.selectedDate;
             self.selectedDate = [self dateForIndexPath:indexPath];
             [self makeSelectedDateChangeColorsWithSeledtedDate:self.selectedDate SelectedDatePravious:self.selectedDateSecond isSelected:YES];
+            
+            MDCalendarViewCell *test = (MDCalendarViewCell *)[self.collectionView cellForItemAtIndexPath:[self indexPathForDate:self.selectedDateSecond]];
+            test.isSelected = NO;
+            
+            if ([_delegate respondsToSelector:@selector(calendarView:didSelectDate:)]) {
+                [_delegate calendarView:self didSelectDate:date];
+            }
         }
             break;
         case 3:
@@ -707,9 +739,9 @@ static CGFloat const kMDCalendarViewSectionSpacing = 10.f;
     }
 
     
-    if ([_delegate respondsToSelector:@selector(calendarView:didSelectDate:)]) {
-        [_delegate calendarView:self didSelectDate:date];
-    }
+//    if ([_delegate respondsToSelector:@selector(calendarView:didSelectDate:)]) {
+//        [_delegate calendarView:self didSelectDate:date];
+//    }
 }
 
 - (BOOL)collectionView:(UICollectionView *)collectionView shouldSelectItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -774,7 +806,7 @@ static CGFloat const kMDCalendarViewSectionSpacing = 10.f;
         }
         MDCalendarViewCell *test = (MDCalendarViewCell *)[self.collectionView cellForItemAtIndexPath:[self indexPathForDate:[selectedDateSecond dateByAddingTimeInterval:interval]]];
         test.selected = isSelected;
-        
+        test.isSelected = NO;
     }
 }
 

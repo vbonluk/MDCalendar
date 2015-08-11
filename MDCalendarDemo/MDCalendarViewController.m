@@ -112,7 +112,8 @@
 - (BOOL) calendarView:(MDCalendar *)calendarView shouldShowIndicatorForDate:(NSDate *)date
 {
     // show indicator for every 4th day
-    return [date day] % 4 == 1;
+//    return [date day] % 4 == 1;
+    return  NO;
 }
 
 @end
